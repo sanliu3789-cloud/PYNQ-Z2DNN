@@ -1,0 +1,7 @@
+numpy>=1.21,<2
+Flask==1.1.1
+Jinja2<3.1
+Werkzeug<2.1
+itsdangerous<2.1
+# PYNQ 3.0.1 comes from the existing board image, not pip installation here.
+# PC model generation additionally uses openpyxl; UI QA uses installed Chrome and Node 24.

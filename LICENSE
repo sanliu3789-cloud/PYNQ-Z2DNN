@@ -1,0 +1,38 @@
+MIT License
+
+Copyright (c) 2026 智脑先导项目组 (Zhinao Xiandao Project Team)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+补充说明 / Additional notice
+
+1. 本许可是软件许可，不构成医疗器械许可，也不授予任何临床使用资格。
+   This is a software licence. It grants no medical-device approval and no
+   clinical-use clearance.
+
+2. 模型权重（`model/*.npz`）的来源与授权状态见 NOTICE.md；若上游授权要求
+   更严格的条款，以上游条款为准。
+   The provenance and licensing status of the model weights are described in
+   NOTICE.md; upstream terms prevail where they are stricter.
+
+3. 第三方组件（numpy、Flask、Pillow 等）按各自的许可分发，见 THIRD_PARTY.md。
+   Third-party components are distributed under their own licences; see
+   THIRD_PARTY.md.

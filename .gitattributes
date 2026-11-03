@@ -1,0 +1,33 @@
+# GitHub 默认归属与语言统计
+
+* text=auto eol=lf
+
+*.py   text eol=lf
+*.md   text eol=lf
+*.mjs  text eol=lf
+*.js   text eol=lf
+*.html text eol=lf
+*.css  text eol=lf
+*.json text eol=lf
+*.tcl  text eol=lf
+*.yaml text eol=lf
+*.yml  text eol=lf
+*.sh   text eol=lf
+
+*.ps1  text eol=crlf
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.xdc  text eol=crlf
+
+*.bit  binary
+*.hwh  binary
+*.dcp  binary
+*.npz  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.pdf  binary
+
+*.v    linguist-language=Verilog
+*.sv   linguist-language=SystemVerilog
+*.xh   linguist-language=C++

@@ -1,0 +1,68 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---- 本机/板端运行时状态（含临时草稿、socket、许可文件）----
+# 注意：只忽略部署根目录与 photo_intake 的 runtime，
+#      batch8_candidate/runtime/ 是源码，必须入库。
+/runtime/
+/photo_intake/runtime/
+local_runtime/
+*.pid
+*.sock
+power_clearance.json
+
+# ---- 浏览器自动化 ----
+browser_qa/
+browser_profile/
+chrome-profile/
+*.pma
+
+# ---- FPGA 构建产物（可由源码重建，不入库）----
+*.jou
+*.log
+*.str
+.Xil/
+build/
+board_build/
+lowrank_build/
+fpga_build/
+hls/*/solution*/
+hls/*/csim/
+hls/*/syn/
+hls/*/impl/
+hls/*/sim/
+hls/*/proj_*/
+batch8_candidate/build/
+display_wiring/hardware/build/
+sim_out/
+NA/
+xsim.dir/
+*.wdb
+*.pb
+*.sdb
+
+# ---- 生成的可下载物 ----
+dist/
+*.tar
+*.tar.gz
+*.zip
+
+# ---- 编辑器与系统 ----
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- 本地配置（真实地址与口令不入库）----
+.env
+.env.local
+*.local.json

@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "Zhinao Xiandao: a PYNQ-Z2 terminal for stroke severity prediction"
+abstract: >-
+  A research prototype that runs a 62-input clinical DNN on a PYNQ-Z2 (Zynq-7020).
+  The network is factorised into a low-rank form (62-500-4-500-64-500-1) and
+  implemented as a 16-bit fixed-point HLS kernel with on-chip resident weights,
+  reaching 1.42-1.58 ms per sample end-to-end from the processing system.
+  It includes a Flask UI on the ARM core, a four-permutation approximate
+  Shapley explainer (252 model evaluations), a touch terminal, and an OV5640
+  single-frame capture path. Not a medical device.
+authors:
+  - name: "Zhinao Xiandao Project Team"
+    affiliation: "FPGA Innovation Competition (6组-智脑先导)"
+version: 0.1.0
+date-released: 2026-11-04
+license: MIT
+repository-code: "https://github.com/<your-org>/pynq-stroke-ai"
+keywords:
+  - PYNQ
+  - Zynq-7020
+  - FPGA
+  - HLS
+  - fixed-point
+  - low-rank
+  - stroke
+  - NIHSS
+  - Shapley
+  - edge AI
