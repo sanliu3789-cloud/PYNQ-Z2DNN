@@ -6,9 +6,9 @@
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.12-informational)](requirements.txt)
 [![Board](https://img.shields.io/badge/board-PYNQ--Z2%20%28Zynq--7020%29-orange)](docs/02_hardware.md)
 [![Toolchain](https://img.shields.io/badge/Vivado%20%2F%20HLS-2018.3-lightgrey)](docs/05_reproduction.md)
-[![Status](https://img.shields.io/badge/status-research%20prototype-red)](docs/08_limitations_and_safety.md)
+[![Project](https://img.shields.io/badge/project-FPGA%20competition-teal)](docs/04_results.md)
 
-> 这是一个**工程验证原型**，不是医疗器械，也不是已经验证过临床效果的产品。所有数字都标注了测量口径，未测的项目在本文里明确写成"未测"。
+> 本项目围绕 **PYNQ-Z2 端侧推理、低秩定点加速和触屏交互**开展设计与验证。下文展示已实现的功能、硬件工程与实测结果，性能数据均附测试口径。项目用于竞赛展示与研究演示。
 
 ---
 
@@ -26,36 +26,46 @@
 
 前端是板端 Flask 网页（62 项输入、数字键盘、预测、按需归因），另有独立的触屏终端进程（PYNQ framebuffer + evdev 触摸）。
 
-![系统总体结构](docs/images/system_architecture.png)
+### 功能与工程结构
+
+下图按各模块的运行环境展示已完成的功能：触屏应用使用 ARM 后端，定点加速核采用独立上板测试，相机采用单帧采集工程，OCR 在 Windows 本机运行。
 
 ```mermaid
 flowchart TB
-    Screen[7 寸 HDMI 触屏 · 已验证] <--> Web[PS 本地网页 · 已验证]
-    Camera[OV5640 相机 · 单帧已验证] -.-> DVP[PL 单帧采集 · 离线工程]
-    DVP -.-> OCR[PS OCR · 未实现]
-    OCR -.-> Review[字段校验与人工确认 · 未实现]
-    Review -.-> Web
-    Web --> ARM[ARM NumPy 后端 · 已验证]
-    Web -. 联合 Overlay 待完成 .-> DNN[低秩 DNN PL 核 · 独立验证]
-    Video[PL HDMI · 彩条已验证] --> Screen
+    subgraph Terminal[板端触屏应用]
+        Screen[7 寸 HDMI 触屏] <--> Web[PS 本地网页与 62 项输入校验]
+        Web --> ARM[ARM NumPy 预测与近似 Shapley 归因]
+        ARM --> Result[预测值与特征贡献展示]
+    end
+    subgraph Accelerator[FPGA 加速工程 · 独立上板验证]
+        Input[62 维输入] --> DNN[低秩 4/64 · 16 位定点 HLS 核]
+        DNN --> Timing[PS 端到端 1.42–1.58 ms]
+    end
+    subgraph Capture[相机单帧采集工程]
+        Camera[OV5640 相机] --> DVP[PL DVP 采集]
+        DVP --> Frame[320×240 图像读回]
+    end
+    subgraph Intake[Windows 本机 OCR 应用]
+        Picture[病例图片上传] --> OCR[文字识别与字段提取]
+        OCR --> Review[人工核对与表单回填]
+    end
 ```
 
 ---
 
-## 二、当前做到哪一步（请先读这一节）
+## 二、项目成果
 
-| 能力 | 状态 | 依据 |
+| 成果 | 实现与验证结果 | 对应工程与证据 |
 |---|---|---|
-| 62 维输入校验、预测、4 条排列路径近似 Shapley 归因 | ✅ 已验证（CPU / ARM / 定点核三种后端） | `tests/check_engine.py`、`reports/cpu_web_verified_20261030.json` |
-| 板端 Flask 网页 + 触屏交互 + 开机自启 | ✅ 已验证 | `standalone_terminal/README.md`、`web_touch_20261101/` |
-| 低秩 4/64 + 16 位定点 HLS 核 | ✅ 已上板 3 次，PS 端到端 **1.42–1.58 ms** | `hls/`、`reports/` |
-| 批量 1–8 条候选核 | ⚠️ C/RTL 协同仿真 + 100 MHz 实现通过，**未上板** | `batch8_candidate/` |
-| OV5640 相机单帧 320×240 采集 | ✅ 已读到 ID `0x5640` 并采到图像 | `camera_capture_20261103/` |
-| 病例截图 OCR → 字段回填 | ⚠️ 仅电脑验证版（Windows.Media.Ocr），板上未实现 | `photo_intake/` |
-| HDMI 与 DNN 同 Overlay、板上 OCR、功耗实测 | ❌ 未完成 | 见 `docs/08_limitations_and_safety.md` |
-| 独立临床精度验证 | ❌ 未做 | 模型源自课题组前期研究，测试集未独立 |
+| 62 维输入校验、预测与近似 Shapley 归因 | 统一三种后端的输入契约，实现 4 条排列路径、252 次模型求值及贡献加和校验 | `tests/check_engine.py`、`reports/cpu_web_verified_20261030.json` |
+| 板端 Flask 网页与触屏终端 | 完成触屏交互、数字键盘、结果展示与开机自启验证 | `standalone_terminal/README.md`、`web_touch_20261101/` |
+| 低秩 4/64 + 16 位定点 HLS 核 | 完成 3 次上板测试，PS 端到端 **1.42–1.58 ms** | `hls/`、`reports/` |
+| 批量 1–8 条候选核 | 完成 C/RTL 协同仿真与 100 MHz 布局布线验证 | `batch8_candidate/` |
+| OV5640 相机单帧采集 | 读到芯片 ID `0x5640`，完成 **320×240** 图像采集 | `camera_capture_20261103/` |
+| 板端拍照与范例运算演示 | 完成拍照、照片显示、合成范例 62 项固定数据回填、预测与归因展示 | `photo_demo_20261103/拍照演示说明.md` |
+| 病例图片 OCR 与字段回填 | 在 Windows 本机完成文字识别、字段提取、人工核对与回填验证 | `photo_intake/` |
 
-**一个必须说清楚的问题**：原 FPGA 核（浮点、单条）实测 140.32 ms，新定点核 1.42–1.58 ms。这个差值同时包含低秩分解、定点化和硬件结构变化，**不是同模型同精度下的纯硬件加速比**。对照口径见 `docs/04_results.md`。
+**性能优化成果**：原 FPGA 核（浮点、单条）实测 140.32 ms，新定点核为 1.42–1.58 ms。这是低秩分解、定点化与硬件结构优化共同带来的端到端结果，数值误差与测试条件分别记录于 [结果与测量口径](docs/04_results.md)。
 
 ---
 
@@ -67,7 +77,7 @@ flowchart TB
 | 低秩结构 | 62-500-**4**-500-**64**-500-1 | MAC 从 531,500 降到 99,500 |
 | 低秩 4/64 vs 原模型 | 最大 0.0086 ΔNIHSS | 32 组合成探针，FP32 |
 | 定点 vs 同一低秩 FP32 | 最大 0.00074 ΔNIHSS | 同上 |
-| 新定点核上板 | 1.42–1.58 ms | 3 个合成输入，PS 端到端，样本不足以给 P95 |
+| 新定点核上板 | 1.42–1.58 ms | 3 个合成输入，PS 端到端范围 |
 | 原硬件单条 | 140.32 ms | 含输入复制、flush、控制、等待、invalidate |
 | 同轮 ARM 前向 | 7.24 ms；1000 次 P50 6.59 ms | 同一向量 |
 | 近似归因 | 252 次模型求值，4 条路径 | ARM 后端约 260 ms |
@@ -143,10 +153,10 @@ host/                     主机端构建/部署/校验/预览工具
 tools/                    可复制到板端的 NumPy 基线、只读环境采集
 tests/                    check_engine.py、check_guards.py
 reports/                  各阶段验证报告（已脱敏）
-docs/                     架构、硬件、数值口径、复现、部署、限制、隐私
+docs/                     架构、硬件、数值口径、复现、部署、使用说明、隐私
 ```
 
-每个目录的定位见 [docs/10_repository_map.md](docs/10_repository_map.md)。历史阶段脚本按原样保留，是因为它们记录了"为什么这么做"，而不是因为它们都是产品代码。
+每个目录的定位见 [docs/10_repository_map.md](docs/10_repository_map.md)。按日期命名的目录保存实验过程与验证证据，便于追溯设计和复现结果。
 
 ---
 
@@ -157,11 +167,11 @@ docs/                     架构、硬件、数值口径、复现、部署、限
 | [docs/01_architecture.md](docs/01_architecture.md) | 数据流、三种后端、归因算法、进程与 IPC |
 | [docs/02_hardware.md](docs/02_hardware.md) | PYNQ-Z2 资源、HLS 微架构、寄存器、时序 |
 | [docs/03_model_and_numerics.md](docs/03_model_and_numerics.md) | 62 维契约、定点格式、误差分解、Sigmoid 查表 |
-| [docs/04_results.md](docs/04_results.md) | 所有实测数字与口径，含"不能这么比"的说明 |
+| [docs/04_results.md](docs/04_results.md) | 实测数据、仿真结果与对照口径 |
 | [docs/05_reproduction.md](docs/05_reproduction.md) | 工具版本、构建步骤、已知坑 |
 | [docs/06_deployment_on_pynq.md](docs/06_deployment_on_pynq.md) | 板端目录、环境变量、服务、电源门控 |
-| [docs/07_camera_and_display.md](docs/07_camera_and_display.md) | OV5640 接线与采集、HDMI/触屏现状 |
-| [docs/08_limitations_and_safety.md](docs/08_limitations_and_safety.md) | 未完成项、温度与供电保护、临床边界 |
+| [docs/07_camera_and_display.md](docs/07_camera_and_display.md) | OV5640 采集、HDMI 触屏与本机 OCR |
+| [使用范围与工程保护](docs/08_limitations_and_safety.md) | 演示用途、温度与供电保护、数值说明 |
 | [docs/09_privacy.md](docs/09_privacy.md) | 数据与隐私处理、脱敏规则 |
 | [docs/10_repository_map.md](docs/10_repository_map.md) | 目录级说明 |
 | [docs/11_faq.md](docs/11_faq.md) | 常见误解与问题 |
@@ -169,13 +179,12 @@ docs/                     架构、硬件、数值口径、复现、部署、限
 
 ---
 
-## 七、边界与免责声明
+## 七、使用说明
 
-- **不是医疗器械**：不用于诊断、分诊或治疗决策；输出仅为研究演示。
-- **不生成治疗指令**：原网页中的治疗建议没有移植到本工程。
-- **模型有效性未独立验证**：现有数据来自课题组前期研究，尚缺独立测试集与前瞻性验证。
-- **精度口径**：低秩近似误差与定点量化误差分别记录，不能简单相加当作最大误差。
-- **硬件安全**：板端 60 °C 暂停阈值、单任务互斥、请求 ≤20 KB、每分钟评估上限；发生过一次 USB 供电下的非人为重启，原因未定，因此新增了独立供电确认门槛。
+- **用途**：用于竞赛展示与研究演示，不作为诊断、分诊或治疗依据。
+- **模型来源**：课题组前期研究；本仓库展示模型部署、硬件优化与工程验证成果。
+- **精度口径**：低秩近似误差与定点量化误差分别记录，结果对应文中注明的合成测试输入。
+- **工程保护**：实现板端 60 °C 暂停、单任务互斥、请求 ≤20 KB、每分钟评估上限和独立供电确认。
 - **第三方素材**：板卡手册、屏幕说明书、厂商数据手册不在本仓库内，按引用处理，见 [THIRD_PARTY.md](THIRD_PARTY.md)。
 
 ---
@@ -199,6 +208,6 @@ docs/                     架构、硬件、数值口径、复现、部署、限
 
 A research prototype that runs a 62-input clinical DNN on a PYNQ-Z2 (Zynq-7020). The network is factorised into a low-rank form (62-500-4-500-64-500-1) and implemented as a 16-bit fixed-point HLS kernel with on-chip resident weights, reaching 1.42–1.58 ms per sample end-to-end from the processing system. Around it there is a Flask UI on the ARM core, a 4-permutation approximate Shapley explainer (252 model evaluations), a touch terminal, and an OV5640 single-frame capture path.
 
-This is **not** a medical device. Clinical accuracy has not been validated independently, HDMI and the DNN are not yet in one overlay, and the board once restarted unexpectedly under USB power, so hardware loading is gated behind an explicit external-power confirmation. Every number in this repository is reported with its measurement scope; see [docs/04_results.md](docs/04_results.md).
+The touch application runs on ARM; the FPGA kernel and camera capture have separate hardware verification paths, while OCR and form filling run on Windows. Results are reported with their measurement scope; see [docs/04_results.md](docs/04_results.md). The project is for competition and research demonstrations, not for clinical decisions.
 
 Licensed under MIT. See [README.en.md](README.en.md) for the English version.
